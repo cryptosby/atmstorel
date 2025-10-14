@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InfinityScroll - Social Digital Marketplace</title>
+    <meta name="description" content="Discover a unique digital marketplace experience. Explore and share creative content like photos, videos, and e-books on a one-of-a-kind social platform.">
+    <meta name="keywords" content="digital marketplace, social store, digital files, creativity, e-books, photography, video, portfolio, innovative, minimalist">
+    <meta property="og:title" content="InfinityScroll - Social Digital Marketplace">
+    <meta property="og:description" content="Explore a unique digital marketplace to sell and buy creative files.">
+    <meta property="og:image" content="https://placehold.co/1200x630/2C2E35/E5E5E5?text=InfinityScroll">
+    <meta property="og:url" content="https://your-store-github.io">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+        .dark body {
+            background-color: #1a1a2e;
+        }
+        .container {
+            max-width: 768px;
+            margin: auto;
+            padding: 1.5rem;
+        }
+        .card {
+            background-color: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            border: 1px solid #e5e7eb;
+        }
+        .dark .card {
+            background-color: #2c2c44;
+            border-color: #3b3c5a;
+        }
+        .ad-banner {
+            background-color: #e5e7eb;
+            color: #6b7280;
+            text-align: center;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            border-radius: 0.5rem;
+            font-style: italic;
+            transition: background-color 0.3s ease;
+        }
+        .dark .ad-banner {
+            background-color: #4b5563;
+            color: #d1d5db;
+        }
+        .buy-button {
+            @apply flex flex-col items-center justify-center p-2 px-3 rounded-lg text-sm text-center font-semibold transition-transform duration-200 transform hover:scale-105;
+        }
+        .buy-button span:first-child {
+            line-height: 1;
+        }
+        .buy-button span:last-child {
+            line-height: 1;
+            font-size: 0.75rem;
+        }
+        .media-placeholder {
+            @apply bg-gray-200 dark:bg-gray-700 w-full h-64 rounded-lg flex flex-col items-center justify-center text-gray-500 dark:text-gray-400;
+            position: relative;
+        }
+        .media-placeholder input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .comment-replies {
+            display: none;
+        }
+        .edit-delete-btn {
+            @apply text-gray-400 hover:text-red-500 transition-colors cursor-pointer text-sm;
+        }
+        .file-info-card {
+            @apply bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mt-4;
+        }
+        .upload-progress {
+            @apply w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2;
+        }
+        .upload-progress-bar {
+            @apply bg-blue-600 h-2.5 rounded-full transition-all duration-300;
+        }
+        .payment-buttons-container {
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .payment-buttons-container.visible {
+            opacity: 1;
+        }
+        .video-16-9 {
+            aspect-ratio: 16/9;
+        }
+        .video-9-16 {
+            aspect-ratio: 9/16;
+        }
+        .video-1-1 {
+            aspect-ratio: 1/1;
+        }
+        .admin-controls {
+            @apply bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mt-4;
+        }
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+        }
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        /* Fix para controles de video/audio */
+        .media-container {
+            position: relative;
+            width: 100%;
+        }
+        .media-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .media-content {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+        }
+        .media-content video,
+        .media-content audio {
+            width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200">
+
+    <!-- Ad 1: At the top -->
+    <div class="ad-banner text-xs sm:text-sm">
+        Advertisement: Your ad here!
+    </div>
+    
+    <!-- Admin Indicator -->
+    <div id="admin-indicator" class="container text-center text-red-500 font-bold p-2 hidden">
+        Modo Administrador
+    </div>
+
+    <!-- Header & Navigation -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-50">
+        <div class="container flex justify-end items-center space-x-4 py-4">
+            <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+                <i class="fas fa-moon text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Feed -->
+    <main class="container py-8">
+        <div id="product-feed" class="space-y-10">
+            <!-- Product will be dynamically generated here -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 mt-10 shadow-sm">
+        <div class="container py-8 text-center text-gray-600 dark:text-gray-400">
+            <!-- Ad 6: Above the footer -->
+            <div class="ad-banner text-xs sm:text-sm mb-6">
+                Advertisement: Final banner!
+            </div>
+            <div class="flex flex-wrap justify-center space-x-4 sm:space-x-8 mb-4 text-sm font-medium">
+                <a href="#about" class="hover:text-blue-600 transition-colors">About</a>
+                <a href="#faq" class="hover:text-blue-600 transition-colors">FAQ</a>
+                <a href="#privacy-policy" class="hover:text-blue-600 transition-colors">Privacy Policy</a>
+                <a href="#terms" class="hover:text-blue-600 transition-colors">Terms of Service</a>
+                <a href="#contact" class="hover:text-blue-600 transition-colors">Contact</a>
+            </div>
+            <p>&copy; 2024 InfinityScroll. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- Modals and other hidden elements -->
+    <div id="message-modal-overlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl text-center">
+            <p id="message-modal-text" class="text-lg font-semibold mb-4"></p>
+            <button onclick="document.getElementById('message-modal-overlay').classList.add('hidden')" class="bg-blue-600 text-white px-4 py-2 rounded-md">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const isAdmin = true;
+        const paymentButtonsDelay = 5000; // 5 seconds
+
+        // Payment buttons configuration
+        const paymentButtonsConfig = [
+            { id: 'whatsapp', show: true, delay: 5000, icon: 'fab fa-whatsapp', label: 'WhatsApp', color: 'hover:bg-green-500' },
+            { id: 'telegram', show: true, delay: 10000, icon: 'fab fa-telegram-plane', label: 'Telegram', color: 'hover:bg-blue-500' },
+            { id: 'paypal', show: true, delay: 15000, icon: 'fab fa-paypal', label: 'Paypal', color: 'hover:bg-blue-600' },
+            { id: 'bank', show: false, delay: 20000, icon: 'fas fa-university', label: 'Bank', color: 'hover:bg-gray-600' },
+            { id: 'donate', show: true, delay: 25000, icon: 'fas fa-gift', label: 'Thanks', color: 'hover:bg-orange-500' },
+            { id: 'crypto', show: false, delay: 30000, icon: 'fas fa-bitcoin', label: 'Crypto', color: 'hover:bg-yellow-500' }
+        ];
+
+        // Load posts from localStorage or use default
+        let posts = JSON.parse(localStorage.getItem('infinityScrollPosts')) || [
+            {
+                id: 1,
+                user: 'Pro User',
+                userImage: 'https://placehold.co/40x40/94a3b8/e2e8f0?text=U',
+                title: 'Creative Photography "Inner Cosmos"',
+                description: 'A visual journey through the galaxy. Perfect for high-quality wallpapers or prints. PNG file.',
+                fileUrl: 'https://placehold.co/600x800/1e293b/d4d4d8?text=Inner+Cosmos',
+                fileType: 'image',
+                fileSize: '2.4 MB',
+                price: '20',
+                isFree: false,
+                showFileInfo: true,
+                likes: 124,
+                comments: [
+                    { id: 101, user: 'Ana G.', userImage: 'https://placehold.co/30x30/fecaca/991b1b?text=A', text: 'Incredible! I love the depth of the colors.', date: '2024-09-05', replies: [] },
+                    { id: 102, user: 'Luis V.', userImage: 'https://placehold.co/30x30/bfdbfe/1d4ed8?text=L', text: 'I bought the photo, it\'s worth every penny. Excellent work!', date: '2024-09-05', replies: [] }
+                ]
+            }
+        ];
+
+        const productFeed = document.getElementById('product-feed');
+        const adminIndicator = document.getElementById('admin-indicator');
+        let profileImage = posts[posts.length - 1].userImage;
+        let showMediaOverlay = false; // Control para mostrar/ocultar overlay
+
+        // Save posts to localStorage
+        function savePostsToStorage() {
+            localStorage.setItem('infinityScrollPosts', JSON.stringify(posts));
+        }
+
+        // Update SEO meta tags
+        function updateSEOMetaTags(title, description) {
+            document.title = title + ' - InfinityScroll';
+            document.querySelector('meta[name="description"]').setAttribute('content', description);
+            document.querySelector('meta[property="og:title"]').setAttribute('content', title);
+            document.querySelector('meta[property="og:description"]').setAttribute('content', description);
+        }
+
+        // Renders the most recent post in the main feed
+        function renderSinglePost() {
+            if (!productFeed) {
+                console.error('Product feed element not found');
+                return;
+            }
+            
+            productFeed.innerHTML = '';
+            const post = posts[posts.length - 1];
+            if (!post) {
+                productFeed.innerHTML = '<div class="card text-center p-8">No posts available</div>';
+                return;
+            }
+
+            // Update SEO
+            updateSEOMetaTags(post.title, post.description);
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            if (isAdmin) {
+                adminIndicator.classList.remove('hidden');
+            } else {
+                adminIndicator.classList.add('hidden');
+            }
+            
+            const ad2 = `<div class="ad-banner text-xs sm:text-sm">Advertisement: Top banner!</div>`;
+            const ad3 = `<div class="ad-banner text-xs sm:text-sm">Advertisement: Bottom banner!</div>`;
+            
+            // Generate payment buttons based on config
+            const paymentButtons = paymentButtonsConfig.filter(btn => btn.show).map(btn => `
+                <button id="${btn.id}-button" class="buy-button hidden bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white ${btn.color} hover:text-white">
+                    <i class="${btn.icon} text-lg"></i>
+                    <span>${btn.label}</span>
+                    <span class="text-xs">${btn.label === 'Thanks' ? 'Donate' : 'Buy Now'}</span>
+                </button>
+            `).join('');
+
+            // Render top ad
+            card.innerHTML += ad2;
+
+            const adminProfileControls = isAdmin ? `
+                <label class="cursor-pointer relative group">
+                    <img id="user-image" class="w-12 h-12 rounded-full object-cover transition-opacity duration-300 group-hover:opacity-75" src="${profileImage}" alt="Profile">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <i class="fas fa-camera text-white text-lg"></i>
+                    </div>
+                    <input type="file" id="profile-image-upload" class="hidden" accept="image/*" onchange="handleProfileImageUpload(event)">
+                </label>
+                <div class="flex flex-col w-full">
+                    <input type="text" id="user-name-input" class="text-lg font-semibold bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md p-1" value="${post.user}" onchange="updateUserName(this.value)">
+                </div>
+            ` : `
+                <div class="flex items-center space-x-3">
+                    <img class="w-12 h-12 rounded-full object-cover" src="${profileImage}" alt="Profile">
+                    <div class="flex flex-col w-full">
+                        <p class="text-lg font-semibold">${post.user}</p>
+                    </div>
+                </div>
+            `;
+            
+            const adminPostControls = isAdmin ? `
+                <input type="text" id="post-title-input" class="w-full text-2xl font-bold bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md p-1" value="${post.title}" onchange="updatePostTitle(this.value)">
+                <textarea id="post-description-input" class="w-full text-gray-600 dark:text-gray-300 bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md p-1 resize-y" rows="3" onchange="updatePostDescription(this.value)">${post.description}</textarea>
+            ` : `
+                <h2 class="text-2xl font-bold">${post.title}</h2>
+                <p class="text-gray-600 dark:text-gray-300">${post.description}</p>
+            `;
+
+            const adminPriceControl = isAdmin ? `
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl font-bold ${post.isFree ? 'text-green-600' : 'text-blue-600'}">${post.isFree ? 'FREE' : '$'}</span>
+                    ${post.isFree ? '' : `<input type="text" id="price-input" class="text-2xl font-bold text-blue-600 bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md p-1 w-20" value="${post.price}" onchange="updatePrice(this.value)">`}
+                </div>
+            ` : `
+                <span class="text-2xl font-bold ${post.isFree ? 'text-green-600' : 'text-blue-600'}">${post.isFree ? 'FREE' : '$' + post.price}</span>
+            `;
+
+            // Media section with FIXED overlay issue
+            const mediaSection = `
+                <div class="w-full rounded-lg overflow-hidden my-6">
+                    <div class="media-container">
+                        <div class="media-content">
+                            ${getPostMedia(post.fileUrl, post.fileType, post.title)}
+                        </div>
+                        ${isAdmin && showMediaOverlay ? `
+                        <div class="media-overlay" id="media-overlay">
+                            <i class="fas fa-upload text-2xl mb-2"></i>
+                            <span class="font-semibold">Select File</span>
+                            <input type="file" id="media-upload" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="handleMediaUpload(event)" accept="image/*,video/*,audio/*,.pdf,.doc,.docx,.txt,.epub,.zip">
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div id="upload-progress-container" class="hidden mt-2">
+                        <div class="upload-progress">
+                            <div id="upload-progress-bar" class="upload-progress-bar" style="width: 0%"></div>
+                        </div>
+                        <p id="upload-status" class="text-sm text-center mt-1">Uploading...</p>
+                    </div>
+                </div>
+            `;
+
+            // Admin controls section - MEJORADO
+            const adminControls = isAdmin ? `
+                <div class="admin-controls">
+                    <h4 class="font-semibold text-yellow-700 dark:text-yellow-300 mb-2">Admin Controls</h4>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm">Free Product:</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${post.isFree ? 'checked' : ''} onchange="toggleFreeProduct(this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-sm">Show File Info:</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" ${post.showFileInfo ? 'checked' : ''} onchange="toggleFileInfo(this.checked)">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex space-x-2 mt-2">
+                            <button onclick="toggleMediaOverlay()" class="flex-1 bg-yellow-500 text-white px-3 py-2 rounded-lg text-sm hover:bg-yellow-600 transition-colors">
+                                <i class="fas fa-exchange-alt mr-2"></i>${showMediaOverlay ? 'Cancel' : 'Change File'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            ` : '';
+
+            card.innerHTML += `
+                <div class="flex items-center space-x-3 mb-4">
+                    ${adminProfileControls}
+                </div>
+                ${adminPostControls}
+                ${adminControls}
+                ${mediaSection}
+
+                <!-- File Information Card -->
+                <div id="file-info-card" class="file-info-card ${(!post.fileSize || !post.showFileInfo) ? 'hidden' : ''}">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h4 class="font-semibold text-blue-700 dark:text-blue-300">File Information</h4>
+                            <p class="text-sm text-blue-600 dark:text-blue-400">Type: ${getFileTypeText(post.fileType)} | Size: ${post.fileSize || 'Unknown'}</p>
+                        </div>
+                        ${(post.isFree && post.fileUrl) ? `<a href="${post.fileUrl}" download class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-600 transition-colors">Download FREE</a>` : ''}
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mb-4">
+                    ${adminPriceControl}
+                    <div class="flex items-center space-x-4">
+                        <button onclick="toggleLike(${post.id}, this)" class="like-button text-gray-400 dark:text-gray-500 hover:text-red-500 transition-colors">
+                            <i class="fas fa-heart text-2xl"></i>
+                        </button>
+                        <span class="likes-count text-lg font-medium">${post.likes}</span>
+                        <button onclick="sharePost(${post.id})" class="text-gray-400 dark:text-gray-500 hover:text-blue-500 transition-colors">
+                            <i class="fas fa-share-alt text-2xl"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Ad 3
+            card.innerHTML += ad3;
+            
+            // Payment buttons and Ad 4
+            card.innerHTML += `<div class="ad-banner text-xs sm:text-sm mt-6">Advertisement: Banner above buttons!</div>`;
+            card.innerHTML += `
+                <div id="payment-buttons-container" class="payment-buttons-container flex justify-center space-x-2 my-4 flex-wrap gap-2">
+                    ${paymentButtons}
+                </div>
+            `;
+            card.innerHTML += `<div class="ad-banner text-xs sm:text-sm">Advertisement: Banner below buttons!</div>`;
+
+            // Ad 5
+            card.innerHTML += `<div class="ad-banner text-xs sm:text-sm mt-6">Advertisement: Banner before comments!</div>`;
+
+            // Comments
+            const commentsHtml = post.comments && post.comments.length > 0 ? post.comments.map(c => `
+                <div id="comment-${c.id}" class="bg-gray-100 dark:bg-gray-800 p-3 rounded-lg mb-2">
+                    <div class="flex items-center justify-between space-x-3 mb-1">
+                        <div class="flex items-center space-x-3">
+                            ${isAdmin ? `
+                                <label class="cursor-pointer relative group">
+                                    <img class="w-8 h-8 rounded-full object-cover transition-opacity duration-300 group-hover:opacity-75" src="${c.userImage}" alt="Comment Profile">
+                                    <input type="file" class="hidden" accept="image/*" onchange="handleCommentImageUpload(event, ${c.id})">
+                                </label>
+                                <input type="text" class="comment-user font-bold text-sm bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md" value="${c.user}" onchange="updateCommentUser(${post.id}, ${c.id}, this.value)">
+                            ` : `
+                                <img class="w-8 h-8 rounded-full object-cover" src="${c.userImage}" alt="Comment Profile">
+                                <span class="font-bold text-sm">${c.user}</span>
+                            `}
+                            <p class="text-xs text-gray-500">${new Date(c.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                        </div>
+                        ${isAdmin ? `
+                            <div class="flex items-center space-x-2">
+                                <button onclick="editComment(${post.id}, ${c.id})" class="edit-delete-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteComment(${post.id}, ${c.id})" class="edit-delete-btn"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <p id="comment-text-${c.id}" class="text-gray-700 dark:text-gray-300 text-sm">${c.text}</p>
+                    <button onclick="toggleReplyBox(${c.id})" class="text-blue-500 text-xs mt-2 hover:underline">Reply</button>
+                    <div id="reply-box-${c.id}" class="hidden mt-2 flex space-x-2">
+                        <input type="text" id="reply-input-${c.id}" class="flex-grow p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm" placeholder="Add a reply...">
+                        <button onclick="addReply(${post.id}, ${c.id})" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm">Post</button>
+                    </div>
+                    <div id="replies-list-${c.id}" class="pl-4 mt-2 border-l border-gray-300 dark:border-gray-600 space-y-2">
+                        ${renderReplies(c.replies, post.id, c.id)}
+                    </div>
+                </div>
+            `).join('') : '<p class="text-sm text-gray-500 dark:text-gray-400">Be the first to comment.</p>';
+
+            card.innerHTML += `
+                <div class="mt-6">
+                    <h3 class="text-xl font-semibold mb-4">Comments (${post.comments ? post.comments.length : 0})</h3>
+                    <div id="comments-list-${post.id}" class="space-y-4">
+                        ${commentsHtml}
+                    </div>
+                    <div class="mt-4 flex space-x-2">
+                        <input type="text" id="comment-input-${post.id}" class="flex-grow p-2 rounded-lg border border-gray-300 dark:border-gray-600 dark:bg-gray-700 text-sm" placeholder="Add a comment...">
+                        <button onclick="addComment(${post.id})" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm">Post</button>
+                    </div>
+                </div>
+            `;
+            
+            productFeed.appendChild(card);
+
+            // Initialize payment buttons with individual delays
+            initializePaymentButtons();
+        }
+
+        // Gets HTML for the file preview - CORREGIDO para video/audio
+        function getPostMedia(url, fileType, altText) {
+            if (!url) {
+                return `
+                    <div class="media-placeholder w-full h-full">
+                        <i class="fas fa-cloud-upload-alt text-4xl mb-4"></i>
+                        <span>No file uploaded</span>
+                    </div>
+                `;
+            }
+
+            if (fileType) {
+                switch(fileType) {
+                    case 'image':
+                        return `<img src="${url}" onerror="this.onerror=null;this.src='https://placehold.co/600x800/e2e8f0/64748b?text=Image+not+available';" alt="${altText}" class="w-full h-auto max-h-96 object-contain rounded-lg">`;
+                    case 'video':
+                        return `
+                            <video controls class="w-full h-auto max-h-96 rounded-lg" style="background: #000;">
+                                <source src="${url}" type="video/mp4">
+                                Your browser does not support the video tag.
+                            </video>
+                        `;
+                    case 'audio':
+                        return `
+                            <div class="w-full p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center">
+                                <i class="fas fa-music text-4xl mb-4 text-blue-500"></i>
+                                <audio controls class="w-full mt-4">
+                                    <source src="${url}" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        `;
+                    case 'pdf':
+                        return `
+                            <div class="media-placeholder w-full h-full bg-red-50 dark:bg-red-900/20">
+                                <i class="fas fa-file-pdf text-4xl mb-4 text-red-500"></i>
+                                <span>PDF Document</span>
+                                <p class="text-sm mt-2 text-center">Preview not available. Click download to view.</p>
+                            </div>
+                        `;
+                    case 'ebook':
+                        return `
+                            <div class="media-placeholder w-full h-full bg-green-50 dark:bg-green-900/20">
+                                <i class="fas fa-book text-4xl mb-4 text-green-500"></i>
+                                <span>E-Book</span>
+                            </div>
+                        `;
+                    case 'archive':
+                        return `
+                            <div class="media-placeholder w-full h-full bg-yellow-50 dark:bg-yellow-900/20">
+                                <i class="fas fa-file-archive text-4xl mb-4 text-yellow-500"></i>
+                                <span>Compressed Archive</span>
+                            </div>
+                        `;
+                    default:
+                        return `
+                            <div class="media-placeholder w-full h-full">
+                                <i class="fas fa-file text-4xl mb-4"></i>
+                                <span>Digital File</span>
+                            </div>
+                        `;
+                }
+            }
+
+            // Fallback to extension detection
+            const extension = url.split('.').pop().toLowerCase().split('?')[0];
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
+                return `<img src="${url}" onerror="this.onerror=null;this.src='https://placehold.co/600x800/e2e8f0/64748b?text=Image+not+available';" alt="${altText}" class="w-full h-auto max-h-96 object-contain rounded-lg">`;
+            } else if (['mp4', 'webm', 'mov', 'avi'].includes(extension)) {
+                return `
+                    <video controls class="w-full h-auto max-h-96 rounded-lg" style="background: #000;">
+                        <source src="${url}" type="video/mp4">
+                        Your browser does not support the video tag.
+                    </video>
+                `;
+            } else if (['mp3', 'wav', 'ogg', 'm4a'].includes(extension)) {
+                return `
+                    <div class="w-full p-6 bg-gray-100 dark:bg-gray-800 rounded-lg flex flex-col items-center justify-center">
+                        <i class="fas fa-music text-4xl mb-4 text-blue-500"></i>
+                        <audio controls class="w-full mt-4">
+                            <source src="${url}" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="media-placeholder w-full h-full">
+                        <i class="fas fa-file text-4xl mb-4"></i>
+                        <span>Digital File: ${extension.toUpperCase()}</span>
+                    </div>
+                `;
+            }
+        }
+
+        // Helper function to get file type text
+        function getFileTypeText(fileType) {
+            const typeMap = {
+                'image': 'Image',
+                'video': 'Video',
+                'audio': 'Audio',
+                'pdf': 'PDF Document',
+                'ebook': 'E-Book',
+                'archive': 'Archive'
+            };
+            return typeMap[fileType] || 'Digital File';
+        }
+
+        // Detect file type from MIME type or extension
+        function detectFileType(file) {
+            if (file.type.startsWith('image/')) return 'image';
+            if (file.type.startsWith('video/')) return 'video';
+            if (file.type.startsWith('audio/')) return 'audio';
+            if (file.type === 'application/pdf') return 'pdf';
+            
+            const extension = file.name.split('.').pop().toLowerCase();
+            if (['epub', 'mobi'].includes(extension)) return 'ebook';
+            if (['zip', 'rar', '7z'].includes(extension)) return 'archive';
+            
+            return 'other';
+        }
+
+        // Format file size
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // Renders replies for a comment
+        function renderReplies(replies, postId, commentId) {
+            if (!replies || replies.length === 0) return '';
+            return replies.map(r => `
+                <div class="bg-gray-200 dark:bg-gray-700 p-2 rounded-lg" data-reply-id="${r.id}">
+                     <div class="flex items-center justify-between space-x-3 mb-1">
+                        <div class="flex items-center space-x-3">
+                            ${isAdmin ? `
+                                <label class="cursor-pointer relative group">
+                                    <img class="w-6 h-6 rounded-full object-cover transition-opacity duration-300 group-hover:opacity-75" src="${r.userImage}" alt="Reply Profile">
+                                    <input type="file" class="hidden" accept="image/*" onchange="handleReplyImageUpload(event, ${postId}, ${commentId}, ${r.id})">
+                                </label>
+                                <input type="text" class="comment-user font-bold text-xs bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md" value="${r.user}" onchange="updateReplyUser(${postId}, ${commentId}, ${r.id}, this.value)">
+                            ` : `
+                                <img class="w-6 h-6 rounded-full object-cover" src="${r.userImage}" alt="Reply Profile">
+                                <span class="font-bold text-xs">${r.user}</span>
+                            `}
+                            <p class="text-xs text-gray-500">${new Date(r.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                        </div>
+                        ${isAdmin ? `
+                            <div class="flex items-center space-x-2">
+                                <button onclick="editReply(${postId}, ${commentId}, ${r.id})" class="edit-delete-btn"><i class="fas fa-edit"></i></button>
+                                <button onclick="deleteReply(${postId}, ${commentId}, ${r.id})" class="edit-delete-btn"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        ` : ''}
+                    </div>
+                    <p id="reply-text-${r.id}" class="text-gray-700 dark:text-gray-300 text-xs">${r.text}</p>
+                </div>
+            `).join('');
+        }
+
+        // Initialize payment buttons with individual delays
+        function initializePaymentButtons() {
+            paymentButtonsConfig.forEach(buttonConfig => {
+                if (buttonConfig.show) {
+                    setTimeout(() => {
+                        const button = document.getElementById(`${buttonConfig.id}-button`);
+                        if (button) {
+                            button.classList.remove('hidden');
+                        }
+                    }, buttonConfig.delay);
+                }
+            });
+
+            // Make container visible after first button appears
+            setTimeout(() => {
+                const container = document.getElementById('payment-buttons-container');
+                if (container) {
+                    container.classList.add('visible');
+                }
+            }, Math.min(...paymentButtonsConfig.filter(b => b.show).map(b => b.delay)));
+        }
+
+        // Toggle media overlay - NUEVA FUNCIÓN
+        function toggleMediaOverlay() {
+            showMediaOverlay = !showMediaOverlay;
+            renderSinglePost();
+        }
+
+        // Toggle free product
+        function toggleFreeProduct(isFree) {
+            const post = posts[posts.length - 1];
+            post.isFree = isFree;
+            savePostsToStorage();
+            renderSinglePost();
+        }
+
+        // Toggle file info visibility
+        function toggleFileInfo(showInfo) {
+            const post = posts[posts.length - 1];
+            post.showFileInfo = showInfo;
+            savePostsToStorage();
+            renderSinglePost();
+        }
+
+        // [Resto de las funciones se mantienen igual...]
+
+        // Function to show/hide the reply input box
+        function toggleReplyBox(commentId) {
+            const replyBox = document.getElementById(`reply-box-${commentId}`);
+            if (replyBox) {
+                replyBox.classList.toggle('hidden');
+            }
+        }
+
+        // Function for the "Like" button
+        function toggleLike(id, button) {
+            const post = posts.find(p => p.id === id);
+            if (post) {
+                const isLiked = button.classList.contains('text-red-500');
+                if (isLiked) {
+                    post.likes--;
+                } else {
+                    post.likes++;
+                }
+                button.classList.toggle('text-red-500');
+                button.classList.toggle('text-gray-400');
+                document.querySelector(`.likes-count`).textContent = post.likes;
+                savePostsToStorage();
+            }
+        }
+        
+        // Function for the "Share" button
+        function sharePost(id) {
+            const currentUrl = window.location.href;
+            
+            // Create a temporary input element to copy the URL
+            const tempInput = document.createElement('textarea');
+            tempInput.value = currentUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // For mobile devices
+
+            try {
+                document.execCommand('copy');
+                showMessage('URL de la publicación copiada al portapapeles!');
+            } catch (err) {
+                console.error('Error al copiar al portapapeles:', err);
+                showMessage('Error al copiar la URL. Por favor, cópiala manualmente.');
+            } finally {
+                document.body.removeChild(tempInput);
+            }
+        }
+
+        // Function to add a comment
+        function addComment(id) {
+            const commentInput = document.getElementById(`comment-input-${id}`);
+            const commentText = commentInput.value.trim();
+            if (commentText) {
+                const post = posts.find(p => p.id === id);
+                const newCommentId = Date.now();
+                const newComment = { 
+                    id: newCommentId, 
+                    user: 'Anonymous', 
+                    userImage: 'https://placehold.co/30x30/fecaca/991b1b?text=A', 
+                    text: commentText, 
+                    date: new Date().toISOString().split('T')[0], 
+                    replies: [] 
+                };
+                post.comments.push(newComment);
+                savePostsToStorage();
+                renderSinglePost();
+                commentInput.value = '';
+            }
+        }
+        
+        // Function to delete a comment
+        function deleteComment(postId, commentId) {
+            const post = posts.find(p => p.id === postId);
+            if (post) {
+                post.comments = post.comments.filter(c => c.id !== commentId);
+                savePostsToStorage();
+                renderSinglePost();
+            }
+        }
+
+        // Function to add a reply to a comment
+        function addReply(postId, commentId) {
+            const replyInput = document.getElementById(`reply-input-${commentId}`);
+            const replyText = replyInput.value.trim();
+            if (!replyText) return;
+
+            const post = posts.find(p => p.id === postId);
+            const parentComment = post.comments.find(c => c.id === commentId);
+
+            if (parentComment) {
+                const newReplyId = Date.now();
+                const newReply = { 
+                    id: newReplyId, 
+                    user: 'Anonymous', 
+                    userImage: 'https://placehold.co/24x24/fecaca/991b1b?text=R', 
+                    text: replyText, 
+                    date: new Date().toISOString().split('T')[0] 
+                };
+                parentComment.replies.push(newReply);
+                savePostsToStorage();
+                renderSinglePost();
+                toggleReplyBox(commentId);
+            }
+        }
+        
+        // Function to delete a reply
+        function deleteReply(postId, commentId, replyId) {
+            const post = posts.find(p => p.id === postId);
+            const parentComment = post.comments.find(c => c.id === commentId);
+            if (parentComment) {
+                parentComment.replies = parentComment.replies.filter(r => r.id !== replyId);
+                savePostsToStorage();
+                renderSinglePost();
+            }
+        }
+
+        // Function to edit a comment
+        function editComment(postId, commentId) {
+            const commentElement = document.getElementById(`comment-text-${commentId}`);
+            if (commentElement && commentElement.tagName === 'P') {
+                const currentText = commentElement.innerText;
+                const newTextArea = document.createElement('textarea');
+                newTextArea.value = currentText;
+                newTextArea.className = 'w-full text-gray-700 dark:text-gray-300 bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md p-1 resize-y';
+                newTextArea.rows = 2;
+                commentElement.replaceWith(newTextArea);
+                
+                const saveButton = document.createElement('button');
+                saveButton.innerText = 'Save';
+                saveButton.className = 'bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm mt-2';
+                saveButton.onclick = () => saveComment(postId, commentId, newTextArea.value);
+                
+                newTextArea.parentNode.appendChild(saveButton);
+            }
+        }
+
+        // Function to save an edited comment
+        function saveComment(postId, commentId, newText) {
+            const post = posts.find(p => p.id === postId);
+            const comment = post.comments.find(c => c.id === commentId);
+            if (comment) {
+                comment.text = newText;
+                savePostsToStorage();
+                renderSinglePost();
+            }
+        }
+        
+        // Function to edit a reply
+        function editReply(postId, commentId, replyId) {
+            const replyElement = document.getElementById(`reply-text-${replyId}`);
+            if (replyElement && replyElement.tagName === 'P') {
+                const currentText = replyElement.innerText;
+                const newTextArea = document.createElement('textarea');
+                newTextArea.value = currentText;
+                newTextArea.className = 'w-full text-gray-700 dark:text-gray-300 bg-transparent border-none outline-none focus:ring-1 focus:ring-blue-500 rounded-md p-1 resize-y';
+                newTextArea.rows = 2;
+                replyElement.replaceWith(newTextArea);
+                
+                const saveButton = document.createElement('button');
+                saveButton.innerText = 'Save';
+                saveButton.className = 'bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors text-sm mt-2';
+                saveButton.onclick = () => saveReply(postId, commentId, replyId, newTextArea.value);
+                
+                newTextArea.parentNode.appendChild(saveButton);
+            }
+        }
+
+        // Function to save an edited reply
+        function saveReply(postId, commentId, replyId, newText) {
+            const post = posts.find(p => p.id === postId);
+            const comment = post.comments.find(c => c.id === commentId);
+            const reply = comment.replies.find(r => r.id === replyId);
+            if (reply) {
+                reply.text = newText;
+                savePostsToStorage();
+                renderSinglePost();
+            }
+        }
+        
+        // Function to update the comment's user name
+        function updateCommentUser(postId, commentId, newName) {
+            const post = posts.find(p => p.id === postId);
+            const comment = post.comments.find(c => c.id === commentId);
+            if(comment) {
+                comment.user = newName;
+                savePostsToStorage();
+            }
+        }
+        
+        // Function to update the reply's user name
+        function updateReplyUser(postId, commentId, replyId, newName) {
+            const post = posts.find(p => p.id === postId);
+            const comment = post.comments.find(c => c.id === commentId);
+            const reply = comment.replies.find(r => r.id === replyId);
+            if(reply) {
+                reply.user = newName;
+                savePostsToStorage();
+            }
+        }
+
+        // Function to update the post title
+        function updatePostTitle(newTitle) {
+            const post = posts[posts.length - 1];
+            if(post) {
+                post.title = newTitle;
+                savePostsToStorage();
+                updateSEOMetaTags(newTitle, post.description);
+            }
+        }
+        
+        // Function to update the post description
+        function updatePostDescription(newDescription) {
+            const post = posts[posts.length - 1];
+            if(post) {
+                post.description = newDescription;
+                savePostsToStorage();
+                updateSEOMetaTags(post.title, newDescription);
+            }
+        }
+        
+        // Function to update the user name
+        function updateUserName(newName) {
+            const post = posts[posts.length - 1];
+            if(post) {
+                post.user = newName;
+                savePostsToStorage();
+            }
+        }
+        
+        // Function to update the price
+        function updatePrice(newPrice) {
+            const post = posts[posts.length - 1];
+            if(post) {
+                post.price = newPrice;
+                savePostsToStorage();
+            }
+        }
+        
+        // Function to handle profile image upload
+        function handleProfileImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('user-image').src = e.target.result;
+                    // Update the in-memory data
+                    posts[posts.length - 1].userImage = e.target.result;
+                    savePostsToStorage();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Function to handle media upload
+        function handleMediaUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Show upload progress
+            const progressContainer = document.getElementById('upload-progress-container');
+            const progressBar = document.getElementById('upload-progress-bar');
+            const statusText = document.getElementById('upload-status');
+            
+            if (progressContainer) progressContainer.classList.remove('hidden');
+            if (statusText) statusText.textContent = 'Uploading...';
+            
+            // Simulate upload progress
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 5;
+                if (progressBar) progressBar.style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(progressInterval);
+                    if (statusText) statusText.textContent = 'Processing file...';
+                    
+                    // Process the file after "upload"
+                    setTimeout(() => {
+                        processUploadedFile(file);
+                        if (progressContainer) progressContainer.classList.add('hidden');
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        // Process the uploaded file
+        function processUploadedFile(file) {
+            const fileUrl = URL.createObjectURL(file);
+            const fileType = detectFileType(file);
+            const fileSize = formatFileSize(file.size);
+            
+            const post = posts[posts.length - 1];
+            post.fileUrl = fileUrl;
+            post.fileType = fileType;
+            post.fileSize = fileSize;
+
+            // Hide the overlay after upload
+            showMediaOverlay = false;
+
+            savePostsToStorage();
+            renderSinglePost();
+            showMessage('File uploaded successfully!');
+        }
+
+        // Function to handle comment image upload
+        function handleCommentImageUpload(event, commentId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const post = posts[posts.length - 1];
+                    const comment = post.comments.find(c => c.id === commentId);
+                    if(comment) {
+                        comment.userImage = e.target.result;
+                        document.querySelector(`#comment-${commentId} img`).src = e.target.result;
+                        savePostsToStorage();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        
+        // Function to handle reply image upload
+        function handleReplyImageUpload(event, postId, commentId, replyId) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const post = posts.find(p => p.id === postId);
+                    const comment = post.comments.find(c => c.id === commentId);
+                    const reply = comment.replies.find(r => r.id === replyId);
+                    if(reply) {
+                        reply.userImage = e.target.result;
+                        // Use the data attribute to find the correct reply element and its image
+                        const replyElement = document.querySelector(`[data-reply-id="${replyId}"]`);
+                        if(replyElement) {
+                             replyElement.querySelector('img').src = e.target.result;
+                        }
+                        savePostsToStorage();
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Function to show a message modal
+        function showMessage(message) {
+            const modal = document.getElementById('message-modal-overlay');
+            const text = document.getElementById('message-modal-text');
+            if (modal && text) {
+                text.innerText = message;
+                modal.classList.remove('hidden');
+            }
+        }
+
+        // Toggle Dark Mode
+        const themeToggle = document.getElementById('theme-toggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                document.body.classList.toggle('dark');
+                const icon = themeToggle.querySelector('i');
+                if (document.body.classList.contains('dark')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        }
+
+        // Initial render on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            renderSinglePost();
+        });
+
+    </script>
+</body>
+</html>
